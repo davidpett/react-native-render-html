@@ -76,7 +76,10 @@ export default class HTML extends PureComponent {
 
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      defaultBlockStyles: {},
+      defaultTextStyles: {}
+    }
     this.renderers = {
       ...HTMLRenderers,
       ...(this.props.renderers || {})
@@ -101,7 +104,7 @@ export default class HTML extends PureComponent {
       // If the source changed, register the new HTML and parse it
       this.registerDOM(this.props)
     }
-    if (this.state.dom !== prevState.dom) {
+    if (this.state.dom !== prevState.dom || this.props.baseFontStyle !== prevProps.baseFontStyle) {
       this.parseDOM(this.state.dom, this.props)
     }
   }
