@@ -5,18 +5,9 @@ import PropTypes from 'prop-types'
 export default class HTMLImage extends PureComponent {
   constructor(props) {
     super(props)
-    const styleWidth = props.width || props.imagesInitialDimensions.width
-    const styleHeight = props.height || props.imagesInitialDimensions.height
-    const width =
-      typeof styleWidth === 'string' && styleWidth.search('%') !== -1 ? styleWidth : parseInt(styleWidth, 10)
-    const height =
-      typeof styleHeight === 'string' && styleHeight.search('%') !== -1 ? styleHeight : parseInt(styleHeight, 10)
-    const optimalWidth = props.imagesMaxWidth <= width ? props.imagesMaxWidth : width
-    const optimalHeight = (optimalWidth * height) / width
-
     this.state = {
-      width: optimalWidth,
-      height: optimalHeight
+      width: props.imagesInitialDimensions.width,
+      height: props.imagesInitialDimensions.height
     }
   }
 
@@ -49,8 +40,8 @@ export default class HTMLImage extends PureComponent {
     this.mounted = false
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.getImageSize(nextProps)
+  componentDidUpdate(prevProps, prevState) {
+    this.getImageSize(this.props)
   }
 
   getDimensionsFromStyle(style, height, width) {
