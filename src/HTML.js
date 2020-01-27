@@ -94,7 +94,7 @@ export default class HTML extends PureComponent {
     this.registerDOM()
 
     this.subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      this.generateDefaultStyles(props.baseFontStyle)
+      this.generateDefaultStyles(this.props.baseFontStyle)
     })
   }
 
