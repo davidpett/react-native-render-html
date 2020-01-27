@@ -22,7 +22,6 @@
     "prop-types": ">=15.5.10",
     "react": "*",
     "react-native": "*",
-    "react-native-appearance": "^0.3.2",
     "react-native-webview": "*"
   },
   "devDependencies": {

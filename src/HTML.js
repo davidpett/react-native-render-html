@@ -1,27 +1,26 @@
-import React, { PureComponent } from 'react'
+import { DomHandler, Parser } from 'htmlparser2'
 import PropTypes from 'prop-types'
-import { View, Text, ViewPropTypes, ActivityIndicator, Dimensions } from 'react-native'
+import React, { PureComponent } from 'react'
+import { ActivityIndicator, Dimensions, Text, View, ViewPropTypes } from 'react-native'
+import { generateDefaultBlockStyles, generateDefaultTextStyles } from './HTMLDefaultStyles'
+import * as HTMLRenderers from './HTMLRenderers'
 import {
-  cssStringToRNStyle,
-  _getElementClassStyles,
-  cssStringToObject,
+  computeTextStyles,
   cssObjectToString,
-  computeTextStyles
+  cssStringToObject,
+  cssStringToRNStyle,
+  _getElementClassStyles
 } from './HTMLStyles'
 import {
   BLOCK_TAGS,
-  TEXT_TAGS,
-  MIXED_TAGS,
   IGNORED_TAGS,
-  TEXT_TAGS_IGNORING_ASSOCIATION,
+  MIXED_TAGS,
+  PREFORMATTED_TAGS,
   STYLESETS,
   TextOnlyPropTypes,
-  PREFORMATTED_TAGS
+  TEXT_TAGS,
+  TEXT_TAGS_IGNORING_ASSOCIATION
 } from './HTMLUtils'
-import { generateDefaultBlockStyles, generateDefaultTextStyles } from './HTMLDefaultStyles'
-import { DomHandler, Parser } from 'htmlparser2'
-import * as HTMLRenderers from './HTMLRenderers'
-import { Appearance } from 'react-native-appearance'
 
 export default class HTML extends PureComponent {
   static propTypes = {
@@ -85,25 +84,10 @@ export default class HTML extends PureComponent {
       ...HTMLRenderers,
       ...(this.props.renderers || {})
     }
-    this.subscription = null
-
-    this.generateDefaultStyles(props.baseFontStyle)
   }
 
   componentDidMount() {
     this.registerDOM()
-
-    this.subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      this.generateDefaultStyles(this.props.baseFontStyle)
-    })
-  }
-
-  componentWillUnmount() {
-    try {
-      this.subscription.remove()
-    } catch (error) {
-      console.warn('react-native-render-html', `Couldn't remove subscription`)
-    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -148,7 +132,7 @@ export default class HTML extends PureComponent {
   }
 
   parseDOM(dom, props = this.props) {
-    const { decodeEntities, debug, onParsed } = this.props
+    const { decodeEntities, debug, onParsed } = props
     const parser = new Parser(
       new DomHandler((_err, dom) => {
         let RNElements = this.mapDOMNodesTORNElements(dom, false, props)
@@ -158,7 +142,9 @@ export default class HTML extends PureComponent {
             RNElements = alteredRNElements
           }
         }
-        this.setState({ RNNodes: this.renderRNElements(RNElements, 'root', 0, props) })
+        this.setState({ RNNodes: this.renderRNElements(RNElements, 'root', 0, props) }, () => {
+          this.generateDefaultStyles(props.baseFontStyle)
+        })
         if (debug) {
           console.log('DOMNodes from htmlparser2', dom)
           console.log('RNElements from render-html', RNElements)
