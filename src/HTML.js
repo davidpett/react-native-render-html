@@ -21,6 +21,7 @@ import {
 import { generateDefaultBlockStyles, generateDefaultTextStyles } from './HTMLDefaultStyles'
 import { DomHandler, Parser } from 'htmlparser2'
 import * as HTMLRenderers from './HTMLRenderers'
+import { Appearance } from 'react-native-appearance'
 
 export default class HTML extends PureComponent {
   static propTypes = {
@@ -84,19 +85,31 @@ export default class HTML extends PureComponent {
       ...HTMLRenderers,
       ...(this.props.renderers || {})
     }
+    this.subscription = null
 
     this.generateDefaultStyles(props.baseFontStyle)
   }
 
   componentDidMount() {
     this.registerDOM()
+
+    this.subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      this.generateDefaultStyles(props.baseFontStyle)
+    })
+  }
+
+  componentWillUnmount() {
+    try {
+      this.subscription.remove()
+    } catch (error) {
+      console.warn('react-native-render-html', `Couldn't remove subscription`)
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
     const { html, uri, renderers } = prevProps
     let doParseDOM = false
 
-    this.generateDefaultStyles(this.props.baseFontStyle)
     if (renderers !== this.props.renderers) {
       this.renderers = { ...HTMLRenderers, ...(this.props.renderers || {}) }
     }
